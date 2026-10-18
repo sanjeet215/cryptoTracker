@@ -1,0 +1,73 @@
+# Kafka (KRaft, single node) + Kafka UI
+# Start: docker compose up -d     Stop: docker compose down   (add -v to wipe data)
+#
+#   Kafka for your apps  -> localhost:9092
+#   Kafka UI             -> http://localhost:8081
+
+services:
+  kafka:
+    image: apache/kafka:3.8.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # --- KRaft: this one node is both broker and controller (no Zookeeper) ---
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # --- Listeners ---
+      # listeners            = where Kafka binds inside the container
+      # advertised.listeners = the address Kafka tells clients to connect back to
+      # EXTERNAL: your Spring apps on the Mac  -> localhost:9092
+      # INTERNAL: other containers (Kafka UI)  -> kafka:29092
+      KAFKA_LISTENERS: EXTERNAL://:9092,INTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # --- Single broker: internal topics can only have 1 replica ---
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # --- Defaults ---
+      KAFKA_NUM_PARTITIONS: 6
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      - kafka
+
+  # Postgres 17 on Alpine: ~1/3 the size of the Debian-based image
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    ports:
+      - "127.0.0.1:5432:5432"   # localhost only, not your whole Wi-Fi
+    environment:
+      POSTGRES_DB: tracker
+      POSTGRES_USER: tracker
+      POSTGRES_PASSWORD: tracker   # dev only; move to .env before pushing to GitHub
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracker -d tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  kafka-data:
+  pg-data:
