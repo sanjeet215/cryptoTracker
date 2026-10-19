@@ -1,0 +1,15 @@
+// Aggregate tasks: run once at the root, applied to every service.
+//   ./gradlew build   -> builds + tests all services
+//   ./gradlew clean   -> cleans all services
+// Run one service:   ./gradlew :ingestor-service:bootRun
+tasks.register('build') {
+    group = 'build'
+    description = 'Builds all services'
+    dependsOn gradle.includedBuilds*.task(':build')
+}
+
+tasks.register('clean') {
+    group = 'build'
+    description = 'Cleans all services'
+    dependsOn gradle.includedBuilds*.task(':clean')
+}

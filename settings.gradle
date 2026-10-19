@@ -1,0 +1,7 @@
+// Root of the cryptoTracker repo.
+// Composite build: each service stays an independent Gradle project
+// (own settings.gradle + wrapper); the root just links them together.
+rootProject.name = 'cryptoTracker'
+
+includeBuild 'ingestor-service'
+includeBuild 'trade-consumer'
