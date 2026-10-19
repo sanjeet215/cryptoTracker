@@ -1,6 +1,51 @@
 spring:
   application:
     name: ingestor-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      acks: all
+      compression-type: lz4
+      properties:
+        spring.json.add.type.headers: false
+        enable.idempotence: true
+        linger.ms: 20
 
 server:
   port: 8082
+
+# Actuator on its own port: app traffic and ops traffic are separated.
+# In prod this port is internal-only (never routed through the gateway).
+management:
+  server:
+    port: 9082
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  endpoint:
+    health:
+      probes:
+        enabled: true   # /actuator/health/liveness and /readiness (Kubernetes probes)
+
+# Default log levels for every environment. Local overrides live in application-local.yaml.
+logging:
+  level:
+    root: INFO
+    com.devpour.ingestor_service: INFO
+    org.apache.kafka: WARN   # Kafka client is very chatty at INFO
+
+binance:
+  ws-base-url: wss://stream.binance.com:9443/stream
+  symbols:
+    - BTCUSDT
+    - ETHUSDT
+    - SOLUSDT
+    - BNBUSDT
+    - XRPUSDT
+
+app:
+  kafka:
+    trades-topic: trades.v1

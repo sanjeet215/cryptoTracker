@@ -19,13 +19,15 @@ One source of truth. Check here before giving a service a port.
 |---|---|---|
 | gateway | 8080 | Planned. Only entry point in prod-style setup |
 | kafka-ui | 8081 | http://localhost:8081 |
-| ingestor-service | 8082 | |
+| ingestor-service | 8082 | Actuator (ops) on 9082 |
 | trade-consumer | 8083 | Planned |
 | market-service | 8084 | Planned |
 | alert-service | 8085 | Planned |
 | Kafka | 9092 | Apps on the Mac. Containers use `kafka:29092` |
 | Postgres | 5432 | Bound to 127.0.0.1 only |
 | Redis | 6379 | Planned |
+
+Actuator (health, metrics, loggers) runs on a separate port per service: 90xx, matching the app's 80xx.
 
 Port taken? Find out who has it: `lsof -i :<port>`
 

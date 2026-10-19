@@ -1,0 +1,4 @@
+# Active only with profile "local" (your Mac). Never used in prod.
+logging:
+  level:
+    com.devpour.ingestor_service.kafka: DEBUG
