@@ -1,0 +1,27 @@
+# Active only with profile "local" (your Mac). Never used in prod.
+#
+# Reuses composefiles/.env (the same file Docker Compose reads), so the DB
+# credentials live in exactly one place locally and never in git.
+# Paths are relative to the working directory. Both are listed so it works whether you start
+# from the repo root (IntelliJ) or from trade-consumer/ (Gradle bootRun).
+spring:
+  config:
+    import:
+      - optional:file:./composefiles/.env[.properties]
+      - optional:file:../composefiles/.env[.properties]
+  datasource:
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    properties:
+      hibernate.generate_statistics: true   # logs "executing N JDBC batches" per transaction
+
+logging:
+  level:
+    com.devpour.consumer: DEBUG
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO
+    # "Session Metrics" block (JDBC statements vs JDBC batches per transaction).
+    # Printed only at DEBUG; both logger names listed because Hibernate versions differ.
+    org.hibernate.session.metrics: DEBUG
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: DEBUG

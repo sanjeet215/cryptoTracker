@@ -43,7 +43,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     ports:
-      - "8081:8080"git remote add origin https://github.com/sanjeet215/cryptoTracker.git
+      - "8081:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
@@ -57,13 +57,14 @@ services:
     ports:
       - "127.0.0.1:5432:5432"   # localhost only, not your whole Wi-Fi
     environment:
-      POSTGRES_DB: tracker
-      POSTGRES_USER: tracker
-      POSTGRES_PASSWORD: tracker   # dev only; move to .env before pushing to GitHub
+      # Values come from composefiles/.env (git-ignored). See .env.example.
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pg-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracker -d tracker"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
